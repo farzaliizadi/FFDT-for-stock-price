@@ -1,0 +1,73 @@
+# Fast-and-Frugal Decision Trees
+#Fast-and-Frugal Decision Tree (Martignon et al., 2003).
+setwd("D:/Documents/RD/Fast and Frugal Decision Trees")
+library(FFTrees)
+library(readxl)
+rm(list=ls())
+# Data
+df <- read.csv("stock_price.csv")
+dim(df)
+head(df)
+str(df)
+names(df)
+unique(df)
+sum(is.na(df))
+colSums(is.na(df))
+df <- df[, -c(1)]
+# Split Dataset
+set.seed(7532)
+sam <- sample(2, nrow(df), replace = T, prob = c(0.80, 0.2))
+train <- df[sam==1,]
+test <- df[sam==2,]
+# Tree Model
+#c(0, 1) =  c("NO", "YES")
+tree <- FFTrees(formula =BUY ~ .,
+                data = train,
+                data.test = test,
+                main = "BUY STOCK OR SELL STOCK",
+                decision.labels = c("NO", "YES"))
+tree
+# the value speed = mcu=Mean cue used==.... for the training data, means that the tree uses, 
+#on average 1.95 pieces of information to classify cases 
+# pci = % cues ignored
+names(tree)
+tree$formula
+tree$tree.definitions
+tree$data.desc
+tree$cue.accuracies
+tree$cost
+tree$inwords
+tree$tree.stats # was previously summary
+tree$level.stats
+tree$decision
+tree$params
+tree$levelout
+tree$tree.max
+tree$comp
+tree$data
+t <- cbind(train$BUY, tree$decision$train)
+head(t, n=10)
+s <- cbind(test$BUY, tree$decision$test)
+head(s, n=10)   #0=False and 1=True are 6 tree decisions.
+# Plot
+plot(tree) 
+plot(tree, tree = 4)       # This the best among the others
+plot(tree, data = 'test')
+plot(tree, data = 'test', tree=4)
+plot(tree, what = 'cues')
+plot(tree, stats = FALSE)
+# Predict
+p <- predict(tree, test)
+dim(test)  
+head(p)
+sum(head(p))
+sum(p)  #out of ... test data ... predicted TRUE.
+# Cue Importance
+forest <- FFForest(BUY ~ .,
+                   data = df,
+                   ntree = 50,
+                   train.p = 0.5)
+forest
+plot(forest)
+library(yarrr)
+rm(list=ls())
